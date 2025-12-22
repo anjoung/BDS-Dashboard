@@ -8,10 +8,6 @@ An automated ETL (Extract-Transform-Load) pipeline and interactive dashboard for
 - [Architecture and DAG](#architecture-and-dag)
 - [Folder Structure](#folder-structure)
 - [Code Files Explained](#code-files-explained)
-- [Data Schema](#data-schema)
-- [Setup and Installation](#setup-and-installation)
-- [Running the Project](#running-the-project)
-- [Deployment](#deployment)
 - [Extending the Project](#extending-the-project)
 
 ---
