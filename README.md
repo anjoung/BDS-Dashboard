@@ -18,36 +18,11 @@ An automated ETL (Extract-Transform-Load) pipeline and interactive dashboard for
 
 ## Project Overview
 
-### What This Project Does
-
 This project pulls data from the U.S. Census Bureau's Business Dynamics Statistics (BDS) API, cleans and transforms it, stores it in a SQLite database, and displays it in an interactive web dashboard. The entire pipeline is automated to run annually via GitHub Actions.
-
-### What is BDS Data?
-
-The Business Dynamics Statistics (BDS) tracks the lifecycle of U.S. businesses:
-- **Firm births**: New businesses entering the market
-- **Firm deaths**: Businesses exiting the market
-- **Job creation**: New jobs added by expanding or new firms
-- **Job destruction**: Jobs lost from contracting or closing firms
-- **Firm age**: How old businesses are (startups = age 0)
-
-The data covers 1978 to present and is released annually (typically December).
-
-### Key Concepts
-
-| Term | Definition |
-|------|------------|
-| **Firm** | A business entity (may have multiple establishments) |
-| **Establishment** | A single physical location of a firm |
-| **Startup** | A firm in its first year of existence (age 0) |
-| **Firm birth** | A new firm identifier appearing in the data |
-| **Firm death** | A firm identifier disappearing from the data |
 
 ---
 
-## Architecture and DAG
-
-### Pipeline DAG (Directed Acyclic Graph)
+## Architecture 
 
 The pipeline follows a linear ETL pattern. Each step must complete before the next begins:
 
@@ -62,13 +37,13 @@ The pipeline follows a linear ETL pattern. Each step must complete before the ne
 │                              1. EXTRACT                                     │
 │                            (src/extract.py)                                 │
 │                                                                             │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
-│  │  National   │    │  By Firm    │    │  By State   │                     │
-│  │   Data      │    │    Age      │    │   Data      │                     │
-│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘                     │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                      │
+│  │  National   │    │  By Firm    │    │  By State   │                      │
+│  │   Data      │    │    Age      │    │   Data      │                      │
+│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘                      │
 │         │                  │                  │                             │
 │         ▼                  ▼                  ▼                             │
-│  raw_national.csv   raw_by_firm_age.csv   raw_by_state.csv                 │
+│  raw_national.csv   raw_by_firm_age.csv   raw_by_state.csv                  │
 └─────────────────────────────────────┬───────────────────────────────────────┘
                                       │
                                       ▼
@@ -79,7 +54,7 @@ The pipeline follows a linear ETL pattern. Each step must complete before the ne
 │  - Convert strings to numeric types                                         │
 │  - Handle missing values (Census suppression codes)                         │
 │  - Calculate derived metrics (startup rate, job creation rate)              │
-│  - Add human-readable labels (state names, firm age categories)             │
+│  - Add readable labels (state names, firm age categories)             │
 │                                                                             │
 │         ▼                  ▼                  ▼                             │
 │  clean_national.csv  clean_by_firm_age.csv  clean_by_state.csv             │
@@ -117,12 +92,6 @@ The pipeline follows a linear ETL pattern. Each step must complete before the ne
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Data Flow Summary
-
-```
-Census API  ──►  Raw CSVs  ──►  Clean CSVs  ──►  SQLite DB  ──►  Dashboard
-   (web)         (data/)        (data/)         (data/)        (browser)
-```
 
 ---
 
@@ -170,8 +139,6 @@ DataPulls/
 
 **Purpose**: Orchestrates the entire ETL pipeline by calling extract, transform, and load in sequence.
 
-**When to modify**: If you need to add pre/post-processing steps, logging, or error handling.
-
 ```python
 # Simplified structure:
 def main():
@@ -206,11 +173,6 @@ def main():
 - `JOB_DESTRUCTION` - Gross job destruction
 - `NET_JOB_CREATION` - Net job creation
 
-**When to modify**:
-- To add new variables from the API
-- To change geographic granularity (e.g., add county-level data)
-- To filter by industry (NAICS codes)
-
 ---
 
 ### `src/transform.py` - Data Transformation
@@ -235,20 +197,6 @@ def main():
 | `JOB_CREATION_RATE` | (JOB_CREATION / EMP) * 100 |
 | `JOB_DESTRUCTION_RATE` | (JOB_DESTRUCTION / EMP) * 100 |
 
-**Firm age labels** (FAGE codes):
-| Code | Label |
-|------|-------|
-| 010 | 0 (Startups) |
-| 020 | 1 year |
-| 030 | 2 years |
-| ... | ... |
-| 090 | 26+ years |
-
-**When to modify**:
-- To add new derived metrics
-- To change data cleaning logic
-- To add new label mappings
-
 ---
 
 ### `src/load.py` - Database Loading
@@ -270,17 +218,6 @@ def main():
 | `by_firm_age` | Data by firm age and year | YEAR, FAGE, FIRM, ... |
 | `by_state` | Data by state and year | YEAR, state, FIRM, ... |
 
-**Indexes created** (for query performance):
-- `idx_national_year` on national(YEAR)
-- `idx_firm_age_year` on by_firm_age(YEAR)
-- `idx_firm_age_fage` on by_firm_age(FAGE)
-- `idx_state_year` on by_state(YEAR)
-- `idx_state_state` on by_state(state)
-
-**When to modify**:
-- To add new tables
-- To change indexing strategy
-- To switch to a different database (PostgreSQL, etc.)
 
 ---
 
@@ -302,11 +239,6 @@ def main():
 3. **Job Dynamics** - Job creation vs destruction, net job creation
 4. **State Comparison** - Top states by employment, firms, startup rate
 
-**When to modify**:
-- To add new visualizations
-- To change chart styling
-- To add new filters or interactivity
-
 ---
 
 ### `.github/workflows/etl_pipeline.yml` - GitHub Actions
@@ -324,215 +256,6 @@ def main():
 4. Run `python run_pipeline.py`
 5. Commit updated data files
 6. Push changes to repository
-
-**When to modify**:
-- To change the schedule
-- To add notifications (Slack, email)
-- To add tests before deployment
-
----
-
-## Data Schema
-
-### Table: `national`
-
-| Column | Type | Description |
-|--------|------|-------------|
-| YEAR | INTEGER | Year (1978-2023) |
-| FIRM | INTEGER | Number of firms |
-| ESTAB | INTEGER | Number of establishments |
-| EMP | INTEGER | Total employment |
-| FIRMDEATH_FIRMS | INTEGER | Number of firm deaths |
-| ESTABS_ENTRY | INTEGER | Establishment entries |
-| ESTABS_EXIT | INTEGER | Establishment exits |
-| JOB_CREATION | INTEGER | Gross job creation |
-| JOB_DESTRUCTION | INTEGER | Gross job destruction |
-| NET_JOB_CREATION | INTEGER | Net job creation |
-| STARTUP_RATE | REAL | Establishment entry rate (%) |
-| EXIT_RATE | REAL | Establishment exit rate (%) |
-| JOB_CREATION_RATE | REAL | Job creation rate (%) |
-| JOB_DESTRUCTION_RATE | REAL | Job destruction rate (%) |
-
-### Table: `by_firm_age`
-
-Same columns as `national`, plus:
-| Column | Type | Description |
-|--------|------|-------------|
-| FAGE | TEXT | Firm age code (010, 020, ...) |
-| FIRM_AGE_LABEL | TEXT | Human-readable age label |
-
-### Table: `by_state`
-
-Same columns as `national`, plus:
-| Column | Type | Description |
-|--------|------|-------------|
-| state | TEXT | State FIPS code (01, 02, ...) |
-| STATE_NAME | TEXT | State name (Alabama, Alaska, ...) |
-
----
-
-## Setup and Installation
-
-### Prerequisites
-
-- Python 3.9 or higher
-- pip (Python package manager)
-- Git
-
-### Step-by-Step Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/DataPulls.git
-   cd DataPulls
-   ```
-
-2. **Create a virtual environment** (recommended):
-   ```bash
-   # Create virtual environment
-   python -m venv venv
-
-   # Activate it
-   # On Windows:
-   venv\Scripts\activate
-   # On macOS/Linux:
-   source venv/bin/activate
-   ```
-
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-### Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| requests | >=2.31.0 | HTTP requests to Census API |
-| pandas | >=2.0.0 | Data manipulation |
-| streamlit | >=1.28.0 | Web dashboard framework |
-| plotly | >=5.18.0 | Interactive charts |
-
----
-
-## Running the Project
-
-### Run the Full Pipeline
-
-```bash
-python run_pipeline.py
-```
-
-This will:
-1. Fetch data from Census API (~30 seconds)
-2. Clean and transform data (~5 seconds)
-3. Load into SQLite database (~2 seconds)
-
-### Run Individual Steps
-
-```bash
-# Extract only
-python -m src.extract
-
-# Transform only (requires extract to have run first)
-python -m src.transform
-
-# Load only (requires transform to have run first)
-python -m src.load
-```
-
-### Launch the Dashboard
-
-```bash
-streamlit run dashboard/app.py
-```
-
-Then open http://localhost:8501 in your browser.
-
-### Query the Database Directly
-
-```bash
-# Open SQLite CLI
-sqlite3 data/bds.db
-
-# Example queries:
-SELECT * FROM national WHERE YEAR = 2023;
-SELECT STATE_NAME, STARTUP_RATE FROM by_state WHERE YEAR = 2023 ORDER BY STARTUP_RATE DESC LIMIT 10;
-```
-
----
-
-## Deployment
-
-### GitHub Actions (Automated Updates)
-
-1. Push your code to GitHub
-2. Go to repository Settings > Actions > General
-3. Enable "Read and write permissions" for workflows
-4. The pipeline will run automatically every December 15
-
-To trigger manually:
-1. Go to Actions tab
-2. Select "BDS ETL Pipeline"
-3. Click "Run workflow"
-
-### Streamlit Cloud (Dashboard Hosting)
-
-1. Go to [share.streamlit.io](https://share.streamlit.io)
-2. Sign in with GitHub
-3. Click "New app"
-4. Select your repository
-5. Set main file path: `dashboard/app.py`
-6. Click "Deploy"
-
-The dashboard will be available at `https://your-app-name.streamlit.app`
-
----
-
-## Extending the Project
-
-### Add a New Data Source
-
-1. Create a new fetch function in `src/extract.py`
-2. Add a transform function in `src/transform.py`
-3. Add table loading in `src/load.py`
-4. Update `run_pipeline.py` if needed
-
-### Add a New Visualization
-
-1. Open `dashboard/app.py`
-2. Add a new chart in the appropriate tab (or create a new tab)
-3. Use `apply_chart_style()` for consistent formatting
-
-### Add Industry Breakdown
-
-The BDS API supports NAICS industry codes. To add industry data:
-
-1. In `src/extract.py`, add:
-   ```python
-   def fetch_by_industry():
-       params = {
-           "get": ",".join(VARIABLES) + ",NAICS",
-           "for": "us:*",
-           "YEAR": "*",
-       }
-       # ... rest of fetch logic
-   ```
-
-2. Add corresponding transform and load functions
-3. Create industry visualizations in the dashboard
-
-### Switch to PostgreSQL
-
-1. Install psycopg2: `pip install psycopg2-binary`
-2. Modify `src/load.py` to use PostgreSQL connection
-3. Update connection strings and SQL syntax as needed
-
----
-
-## License
-
-MIT License
 
 ## Acknowledgments
 
