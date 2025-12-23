@@ -1,6 +1,6 @@
 # Census Business Dynamics Statistics (BDS) Dashboard
 
-An automated ETL (Extract-Transform-Load) pipeline and interactive dashboard for analyzing U.S. business dynamics, including startup trends, firm births/deaths, and job creation patterns.
+An automated data pipeline and interactive dashboard for analyzing U.S. business dynamics, including startup trends, firm births/deaths, and job creation patterns.
 
 ## Table of Contents
 
