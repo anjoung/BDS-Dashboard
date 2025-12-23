@@ -157,6 +157,57 @@ st.markdown("""
     .footer a {
         color: #4a7c94;
     }
+
+    /* Mobile-friendly styles */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 1.5rem;
+            padding-bottom: 0.4rem;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        /* Smaller tab text on mobile */
+        .stTabs [data-baseweb="tab"] {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        /* Metric cards */
+        [data-testid="stMetric"] {
+            padding: 0.75rem;
+        }
+
+        [data-testid="stMetricLabel"] {
+            font-size: 0.75rem;
+        }
+
+        /* Definition box */
+        .definition-box {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* Footer */
+        .footer {
+            font-size: 0.75rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 1.3rem;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -212,25 +263,26 @@ CHART_TEMPLATE = {
 def apply_chart_style(fig, title=None, subtitle=None):
     """Apply consistent Economist-style formatting to a Plotly figure."""
     fig.update_layout(
-        font=dict(family="Source Sans Pro, sans-serif", color="#333"),
+        font=dict(family="Source Sans Pro, sans-serif", color="#333", size=12),
         paper_bgcolor="white",
         plot_bgcolor="white",
-        margin=dict(l=60, r=20, t=120),
+        margin=dict(l=40, r=15, t=80, b=40),  # Smaller margins for mobile
         hovermode="x unified",
+        autosize=True,
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=1.02,
             xanchor="left",
             x=0,
-            font=dict(size=11),
+            font=dict(size=10),
         ),
     )
 
     fig.update_xaxes(
         showgrid=False,
         linecolor="#333",
-        tickfont=dict(size=11),
+        tickfont=dict(size=10),
     )
 
     fig.update_yaxes(
@@ -238,7 +290,7 @@ def apply_chart_style(fig, title=None, subtitle=None):
         gridcolor="#e5e5e5",
         gridwidth=1,
         linecolor="#333",
-        tickfont=dict(size=11),
+        tickfont=dict(size=10),
         zeroline=True,
         zerolinecolor="#333",
         zerolinewidth=1,
@@ -247,11 +299,11 @@ def apply_chart_style(fig, title=None, subtitle=None):
     if title:
         title_text = f"<b>{title}</b>"
         if subtitle:
-            title_text += f"<br><span style='font-size:12px;color:#666;font-weight:normal'>{subtitle}</span>"
+            title_text += f"<br><span style='font-size:11px;color:#666;font-weight:normal'>{subtitle}</span>"
         fig.update_layout(
             title=dict(
                 text=title_text,
-                font=dict(family="Source Serif Pro, Georgia, serif", size=18, color="#1a1a1a"),
+                font=dict(family="Source Serif Pro, Georgia, serif", size=15, color="#1a1a1a"),
                 x=0,
                 xanchor="left",
             )
