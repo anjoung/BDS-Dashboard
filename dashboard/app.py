@@ -263,7 +263,7 @@ CHART_TEMPLATE = {
 def apply_chart_style(fig, title=None, subtitle=None):
     """Apply consistent Economist-style formatting to a Plotly figure."""
     fig.update_layout(
-        font=dict(family="Source Sans Pro, sans-serif", color="#333", size=12),
+        font=dict(family="Source Sans Pro, sans-serif", color="#1a1a1a", size=12),
         paper_bgcolor="white",
         plot_bgcolor="white",
         margin=dict(l=40, r=15, t=80, b=40),  # Smaller margins for mobile
@@ -275,31 +275,33 @@ def apply_chart_style(fig, title=None, subtitle=None):
             y=1.02,
             xanchor="left",
             x=0,
-            font=dict(size=10),
+            font=dict(size=10, color="#1a1a1a"),
         ),
     )
 
     fig.update_xaxes(
         showgrid=False,
-        linecolor="#333",
-        tickfont=dict(size=10),
+        linecolor="#1a1a1a",
+        tickfont=dict(size=10, color="#1a1a1a"),
+        title_font=dict(color="#1a1a1a"),
     )
 
     fig.update_yaxes(
         showgrid=True,
         gridcolor="#e5e5e5",
         gridwidth=1,
-        linecolor="#333",
-        tickfont=dict(size=10),
+        linecolor="#1a1a1a",
+        tickfont=dict(size=10, color="#1a1a1a"),
+        title_font=dict(color="#1a1a1a"),
         zeroline=True,
-        zerolinecolor="#333",
+        zerolinecolor="#1a1a1a",
         zerolinewidth=1,
     )
 
     if title:
         title_text = f"<b>{title}</b>"
         if subtitle:
-            title_text += f"<br><span style='font-size:11px;color:#666;font-weight:normal'>{subtitle}</span>"
+            title_text += f"<br><span style='font-size:11px;color:#444;font-weight:normal'>{subtitle}</span>"
         fig.update_layout(
             title=dict(
                 text=title_text,
